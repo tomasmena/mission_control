@@ -3,8 +3,6 @@ import dash
 from dash import dash_table
 from dash import dcc
 from dash import html
-# import dash_core_components as dcc
-# import dash_html_components as html
 from dash.dependencies import Input, Output
 import plotly
 from plotly import graph_objs as go
@@ -13,7 +11,7 @@ from collections import deque
 import numpy as np
 
 
-# Import and Clean the data
+# Import and Clean the data --------------------------------------------------------------
 
 # Panels ######
 
@@ -23,6 +21,7 @@ with open("panels.json") as data:
 listx=[]
 listy=[]
 listz=[]
+
 for indexl,level in enumerate(read_json):
     listx.append([])  
     listy.append([])  
@@ -73,6 +72,8 @@ trizp= listz[3][30]
 
 with open("inclinations.json") as data:
     inclinations=json.load(data)
+
+
 # ------------------------------------------------------------------------------------
 
 # App Layout
@@ -113,17 +114,10 @@ app.layout =html.Div([
                         html.Td(
                             dcc.Graph(id='geometry_analysis',figure={},clickData=None , hoverData=None, clear_on_unhover=True,)
                         ),
-                        html.Td(
-                            dcc.Graph(id='panel',figure={})
-                        ),
-                        html.Td(
-                            dash_table.DataTable(
-                                id='panel_data',
-                                columns=[{"name":'Level+Panel_Number',"id":"L+P"},{"name":'Inclination',"id":'inc'}],
-                                data=[{'L+P':'L_1 P_#0','inc':inclinations['L_1']['P_#0']}]
-                                )
-                            )
-
+                        html.Td([
+                            dcc.Graph(id='panel',figure={}),
+                            dcc.Graph(id='table',figure={})]
+                        )
                         ]   
                     )
                 )
@@ -203,7 +197,7 @@ def update_graph(option_slctd):
 
 @app.callback(
     Output(component_id='panel', component_property='figure'),
-    # Output(component_id='table', component_property='figure'),
+    Output(component_id='table', component_property='figure'),
     Input(component_id='geometry_analysis',component_property='hoverData'),
     Input(component_id='geometry_analysis',component_property='clickData')
 ) 
@@ -256,7 +250,7 @@ def update_side_graph(hov_Data,clk_data):
                     opacity=0.7,
                     
                     )])
-        
+        fig3=go.Figure(data=[go.Table(header=dict(values=['Levels','Inclinations']))])
         
                 
     fig2.update_layout(
@@ -281,7 +275,7 @@ def update_side_graph(hov_Data,clk_data):
     fig2.update_layout(scene_camera=camera)
     
     
-    return fig2
+    return fig2,fig3
 
 #fig1.show()
 

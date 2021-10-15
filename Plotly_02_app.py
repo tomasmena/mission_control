@@ -10,6 +10,7 @@ import plotly
 from plotly import graph_objs as go
 import json
 from collections import deque
+import dash_bootstrap_components as dbc
 import numpy as np
 
 
@@ -104,33 +105,11 @@ app.layout =html.Div([
                     ),
         
     html.Div(id='output_container',children=[]),
-    html.Br(),
-    html.Div(id='output_container2,', 
-    
-            children=[
-                html.Table(
-                    html.Tbody([
-                        html.Td(
-                            dcc.Graph(id='geometry_analysis',figure={},clickData=None , hoverData=None, clear_on_unhover=True,)
-                        ),
-                        html.Td(
-                            dcc.Graph(id='panel',figure={})
-                        ),
-                        html.Td(
-                            dash_table.DataTable(
-                                id='panel_data',
-                                columns=[{"name":'Level+Panel_Number',"id":"L+P"},{"name":'Inclination',"id":'inc'}],
-                                data=[{'L+P':'L_1 P_#0','inc':inclinations['L_1']['P_#0']}]
-                                )
-                            )
 
-                        ]   
-                    )
-                )
-            ]
-         )     
-    ]
-)
+    html.Br(),
+
+    dbc.Row()
+])
 
 # ----------------------------------------------------------------
 
@@ -210,14 +189,9 @@ def update_graph(option_slctd):
 
 def update_side_graph(hov_Data,clk_data):
 
-    # print (clk_data)
-    # print (hov_Data)
     fig2=go.Figure()
     fig3=go.Figure()
     ctx=dash.callback_context
-    #hpanel=np.transpose(read_json[(((hov_Data["points"][0]["text"]).split())[0])][(((hov_Data["points"][0]["text"]).split())[1])])
-    #clpanel=np.transpose(read_json[(((clk_data["points"][0]["text"]).split())[0])][(((clk_data["points"][0]["text"]).split())[1])])
-    #print (hov_Data)
     if  hov_Data is None:
         fig2.update(data=[go.Mesh3d(
                     x=[0,0,0],
@@ -226,7 +200,6 @@ def update_side_graph(hov_Data,clk_data):
                     color='blue',
                     opacity=0.7,
                     )])
-        #print(hov_Data)
 
     else:
         hpanel=np.transpose(read_json[(((hov_Data["points"][0]["text"]).split())[0])][(((hov_Data["points"][0]["text"]).split())[1])])
@@ -237,11 +210,8 @@ def update_side_graph(hov_Data,clk_data):
                     z=hpanel[2],
                     color='gray',
                     opacity=0.5,
-                    
                     )])
-        
-        #print(hov_Data)
-    #print (clk_data)
+    
     if  clk_data is None:
 
         fig2.update()
@@ -254,9 +224,7 @@ def update_side_graph(hov_Data,clk_data):
                     z=clpanel[2],
                     color='green',
                     opacity=0.7,
-                    
                     )])
-        
         
                 
     fig2.update_layout(
