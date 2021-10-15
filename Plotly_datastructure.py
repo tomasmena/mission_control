@@ -1,14 +1,14 @@
 
 import dash
-import dash_core_components as dcc
-import dash_html_components as html
+from dash import dcc
+from dash import html
+from dash import dash_table
 from dash.dependencies import Input, Output
 import plotly
 from plotly import graph_objs as go
 import json
 from collections import deque
-
-
+import numpy as np
 
 #------------------------------------------------------------------------------
 app=dash.Dash(__name__)
@@ -16,12 +16,11 @@ app=dash.Dash(__name__)
 # Import and Clean the data
 
 
-with open("C:\\Users\\menatj\\AppData\\Roaming\\McNeel\\Rhinoceros\\7.0\\Plug-ins\\IronPython (814d908a-e25c-493d-97e9-ee3861957f49)\\settings\\lib\\Schueco_Computation_Geometry\\Schueco_Computation_Geometry\\panels.json") as data:
+with open("panels.json") as data:
     read_json=json.load(data)
 
-listx=[]
-listy=[]
-listz=[]
+listx,listy,listz=[],[],[]
+
 for indexl,level in enumerate(read_json):
     listx.append([])  
     listy.append([])  
@@ -35,6 +34,43 @@ for indexl,level in enumerate(read_json):
             listx[indexl][indexp].append(p[0])
             listy[indexl][indexp].append(p[1])
             listz[indexl][indexp].append(p[2])
+
+with open("midpoints.json") as data:
+    points=json.load(data)
+
+labels=[]
+
+for i,j in enumerate(points):
+    # labels.append(j)
+    # labels.append([])
+    
+    for k,l in enumerate(points[j]):
+        labels.append(str(j+" "+l))
+        # if (type(labels[i])) == list:
+        #     labels[i].append(l)
+
+# print (read_json["L_0"]["P_#0"])
+# print (np.transpose(read_json["L_0"]["P_#0"])[0])
+
+with open("inclinations.json") as data:
+    inclinations=json.load(data)
+
+# print (inclinations)
+
+for i in inclinations:
+    print(i)
+
+print (inclinations["L_1"])
+#l_p=str(inclinations[0])+str(inclinations[0][0])
+
+app.layout= dash_table.DataTable(
+
+    id='panel_data',
+    columns=[{"name":'Level+Panel_Number',"id":"L+P"},{"name":'Inclination',"id":'inc'}],
+    data=[{'L+P':'L_1 P_#0','inc':inclinations['L_1']['P_#0']}]
+)
+if __name__ == '__main__':
+    app.run_server(debug=True,port=8000)
 
 
 # ------------------------------------------------------------------------------------
@@ -70,7 +106,7 @@ for indexl,level in enumerate(read_json):
 
 # # Connect the plotly graphs with Dash Components 
 
-
+"""
 fig1 = go.Figure()
 for index1,item in enumerate(listx):
     
@@ -102,3 +138,4 @@ fig1.show()
 
 # if __name__ == '__main__':
 #     app.run_server(debug=True, port=8050)
+"""
