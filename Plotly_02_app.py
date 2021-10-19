@@ -108,7 +108,6 @@ app.layout =html.Div([
 
     html.Br(),
 
-    dbc.Row()
 ])
 
 # ----------------------------------------------------------------
@@ -116,7 +115,7 @@ app.layout =html.Div([
 # # Connect the plotly graphs with Dash Components 
 
 ### 
-@app.callback(Output(component_id='geometry_analysis', component_property='figure'),
+@app.callback(Output(component_id='geometry_analysis'),
     #  Output(component_id='panel', component_property='figure')],
     Input(component_id='slct_data', component_property='value'))
 
@@ -181,8 +180,8 @@ def update_graph(option_slctd):
 #### Hovering on panels
 
 @app.callback(
-    Output(component_id='panel', component_property='figure'),
-    # Output(component_id='table', component_property='figure'),
+    Output(component_id='panel'),
+    Output(component_id='table'),
     Input(component_id='geometry_analysis',component_property='hoverData'),
     Input(component_id='geometry_analysis',component_property='clickData')
 ) 
