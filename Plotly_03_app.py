@@ -131,8 +131,8 @@ app.layout =html.Div([
 # # Connect the plotly graphs with Dash Components 
 
 ### 
-@app.callback(Output(component_id='geometry_analysis', component_property='figure'),
-    #  Output(component_id='panel', component_property='figure')],
+@app.callback(Output(component_id='geometry_analysis',component_property='figure'),
+    # Output(component_id='panel', component_property='figure'),
     Input(component_id='slct_data', component_property='value'))
 
 def update_graph(option_slctd):
@@ -157,7 +157,6 @@ def update_graph(option_slctd):
                                     k=[2],
                                     hoverinfo='skip',
                                     ))
-            
             
             
     fig1.update_layout(
