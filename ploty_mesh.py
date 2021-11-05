@@ -48,17 +48,18 @@ def plot_mesh(mesh):
                         showscale=True,
             )]
     x, y, z = [], [], []
-    for fk in mesh.faces():
-        cpt = mesh.face_centroid(fk)
-        x.append(cpt[0])
-        y.append(cpt[1])
-        z.append(cpt[2])
 
-    centroids = [go.Scatter3d(x=x, y=y, z=z, mode='markers')]
+    # for fk in mesh.faces():
+    #     cpt = mesh.face_centroid(fk)
+    #     x.append(cpt[0])
+    #     y.append(cpt[1])
+    #     z.append(cpt[2])
+
+    #centroids = [go.Scatter3d(x=x, y=y, z=z, mode='markers')]
 
     data.extend(lines)
     data.extend(faces)
-    data.extend(centroids)
+    #data.extend(centroids)
     layout = layout = go.Layout(title='Mesh from Rhino Surfaces')
     fig  = go.Figure(data=data, layout=layout)
     fig.show()
