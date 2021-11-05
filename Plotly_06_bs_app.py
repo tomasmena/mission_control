@@ -1,7 +1,9 @@
+import os
+from compas.datastructures import Mesh
 import dash
 from dash import dash_table
-import dash
 from dash import dcc
+# from dash import html
 from dash import html
 from dash.dependencies import Input, Output, State
 import dash_bootstrap_components as dbc
@@ -10,11 +12,6 @@ from plotly import graph_objs as go
 import json
 import numpy as np
 import pandas as pd
-
-
-
-
-
 
 # Import and Clean the data --------------------------------------------------------------
 
@@ -77,6 +74,9 @@ trizp= listz[3][30]
 with open("Plotlling\\inclinations.json") as data:
     inclinations=json.load(data)
 
+
+here = os.path.dirname(__file__)
+mesh = Mesh.from_json(os.path.join(here, 'mesh.json'))
 # ----------------------------------------------------------------
 # App with dash_bootstrap_components
 
@@ -155,14 +155,14 @@ PDFtabs= dbc.Tabs(
 # --------------------------------------------------
 
 
-tab0_content= dbc.Row([html.H5("Geometry Analysis",className='mt-3 display-9 text-uppercase align-right text-secondary bg-secondary text-center'),
-        dbc.Col([graph_card],width={'size':7, 'order':1},className='d-*-block '),
-        dbc.Col([
-            graph_card_2,table_card_3
-            ],width={'size':5, 'order':2},align='top',md=5 )
-        ],justify='center',className='d-*-block bg-light')
+tab0_content=html.Div([dbc.Row(html.H5("Geometry Analysis",className='mt-3 display-9 text-uppercase align-right text-secondary bg-secondary text-center', style={'float':'left'})),
+            dbc.Row([
+                dbc.Col([graph_card],width={'size':7, 'order':1},className='d-*-block'),
+                dbc.Col([
+                    graph_card_2,table_card_3
+                    ],width={'size':5, 'order':2},align='top',md=5 )
+                ],justify='center',className='d-*-block bg-light')])
     
-
 tab1_content= dbc.Row([
         dbc.Col([graph_card_1_t1],className='d-*-block bg-secondary shadow-sm'),
         dbc.Col([PDFtabs],className='d-*-block bg-secondary shadow-sm')
@@ -188,12 +188,12 @@ tabs= dbc.Tabs(
 app.layout= dbc.Container([
     
     dbc.Row([
-        dbc.Col(dbc.Card([html.Img(src="assets\\schueco_logo.PNG", height=20 , style={'float':'left' , 'display':'flex','position':'absolute','top':'35%','left':'1.5%'}),html.H1("Schüco Viewer", 
+        dbc.Col(html.Div([html.Img(src="assets\\schueco_logo.PNG", height=20 , style={'float':'left' , 'display':'flex','position':'absolute','top':'35%','left':'1.5%'}),html.H1("Schüco Viewer", 
         className='text-center bg-light text-dark mt-4 display-6 font-weight-bolder', style={'align': 'center', 'border-style':'none' })]
         ,style={'align-content': 'center', 'position':'relative', 'border-bottom':'double'}),
-        width=10)],justify='center'), 
+        width=12    )],justify='center'), 
         dbc.Row([
-        dbc.Col(dbc.CardHeader([tabs]), width={'size':10},xl=10)
+        dbc.Col(dbc.CardHeader([tabs]), width={'size':12})
     ],justify='center')
 
     ])
@@ -203,32 +203,64 @@ app.layout= dbc.Container([
 # # Connect the plotly graphs with Dash Components 
 
 @app.callback(Output(component_id='geometry_analysis', component_property='figure'),
-  
+    #  Output(component_id='panel', component_property='figure')],
     Input(component_id='slct_data', component_property='value'))
 
 def update_graph(option_slctd):
 
+
     fig1 = go.Figure()
-###
-    for index1,item in enumerate(listx):
-        
-        for index2, item2 in enumerate(item):
-            clslinex=[item2[-1],item2[0]]
-            clsliney=[listy[index1][index2][-1],listy[index1][index2][0]]
-            clslinez=[listz[index1][index2][-1],listz[index1][index2][0]]
+
+    vertices, faces = mesh.to_vertices_and_faces()
+    edges = [[mesh.vertex_coordinates(u), mesh.vertex_coordinates(v)] for u,v in mesh.edges()]
+    line_marker = dict(color='rgb(0,0,0)', width=1.5)
+    lines = []
+    x, y, z = [], [],  []
+    for u, v in edges:
+        x.extend([u[0], v[0], [None]])
+        y.extend([u[1], v[1], [None]])
+        z.extend([u[2], v[2], [None]])
+
+    lines = [go.Scatter3d(x=x, y=y, z=z, mode='lines', line=line_marker,hoverinfo='skip')]
+    triangles = []
+    for face in faces:
+        triangles.append(face[:3])
+        if len(face) == 4:
+            triangles.append([face[2], face[3], face[0]])
+    
+    i = [v[0] for v in triangles]
+    j = [v[1] for v in triangles]
+    k = [v[2] for v in triangles]
+
+    x = [v[0] for v in vertices]
+    y = [v[1] for v in vertices]
+    z = [v[2] for v in vertices]
+
+
+    data = []
+    faces = [go.Mesh3d(x=x,
+                        y=y,
+                        z=z,
+                        i=i,
+                        j=j,
+                        k=k,
+                        opacity=1.,
+                        # contour={'show':True},
+                        # vertexcolor=vcolor,
+                        colorbar_title='Amplitude',
+                        colorbar_thickness=10,
+                        colorscale= 'agsunset', # 'viridis'
+                        # intensity=intensity_,
+                        intensitymode='cell',
+                        showscale=True,
+                        hoverinfo='skip'
+            )]
+    
+    data.extend(lines)
+    data.extend(faces)
+    
+    fig1  = go.Figure(data=data)
             
-            fig1.add_trace(go.Mesh3d(x=item2,
-                                    y=listy[index1][index2],
-                                    z=listz[index1][index2],
-                                    color="gray",
-                                    opacity=0.65,
-                                    i=[0],
-                                    j=[1],
-                                    k=[2],
-                                    hoverinfo='skip',
-                                    ))
-            
-###            
             
     fig1.update_layout(
         scene = dict(
@@ -239,9 +271,6 @@ def update_graph(option_slctd):
         height=450,
         margin=dict(r=20, l=10, b=10, t=10))
 
-    
-    
-    
     # PAnel graph
     
     if option_slctd == 0:

@@ -1,3 +1,5 @@
+import os
+from compas.datastructures import Mesh
 import dash
 from dash import dash_table
 import dash
@@ -77,6 +79,8 @@ trizp= listz[3][30]
 with open("Plotlling\\inclinations.json") as data:
     inclinations=json.load(data)
 
+here = os.path.dirname(__file__)
+mesh = Mesh.from_json(os.path.join(here, 'mesh.json'))
 # ----------------------------------------------------------------
 # App with dash_bootstrap_components
 
@@ -188,7 +192,7 @@ tabs= dbc.Tabs(
 app.layout= dbc.Container([
     
     dbc.Row([
-        dbc.Col(dbc.Card([html.Img(src="assets\\schueco_logo.PNG", height=20 , style={'float':'left' , 'display':'flex','position':'absolute','top':'35%','left':'1.5%'}),html.H1("Schüco Viewer", 
+        dbc.Col(html.Div([html.Img(src="assets\\schueco_logo.PNG", height=20 , style={'float':'left' , 'display':'flex','position':'absolute','top':'35%','left':'1.5%'}),html.H1("Schüco Viewer", 
         className='text-center bg-light text-dark mt-4 display-6 font-weight-bolder', style={'align': 'center', 'border-style':'none' })]
         ,style={'align-content': 'center', 'position':'relative', 'border-bottom':'double'}),
         width=10)],justify='center'), 
@@ -209,24 +213,59 @@ app.layout= dbc.Container([
 def update_graph(option_slctd):
 
     fig1 = go.Figure()
+    
 ###
-    for index1,item in enumerate(listx):
-        
-        for index2, item2 in enumerate(item):
-            clslinex=[item2[-1],item2[0]]
-            clsliney=[listy[index1][index2][-1],listy[index1][index2][0]]
-            clslinez=[listz[index1][index2][-1],listz[index1][index2][0]]
-            
-            fig1.add_trace(go.Mesh3d(x=item2,
-                                    y=listy[index1][index2],
-                                    z=listz[index1][index2],
-                                    color="gray",
-                                    opacity=0.65,
-                                    i=[0],
-                                    j=[1],
-                                    k=[2],
-                                    hoverinfo='skip',
-                                    ))
+    vertices, faces = mesh.to_vertices_and_faces()  
+    edges = [[mesh.vertex_coordinates(u), mesh.vertex_coordinates(v)] for u,v in mesh.edges()]
+    line_marker = dict(color='rgb(0,0,0)', width=1.5)
+    lines = []
+    x, y, z = [], [],  []
+    for u, v in edges:
+        x.extend([u[0], v[0], [None]])
+        y.extend([u[1], v[1], [None]])
+        z.extend([u[2], v[2], [None]])
+
+    lines = [go.Scatter3d(x=x, y=y, z=z, mode='lines', line=line_marker,hoverinfo='skip')]
+    triangles = []
+    for face in faces:
+        triangles.append(face[:3])
+        if len(face) == 4:
+            triangles.append([face[2], face[3], face[0]])
+    
+    i = [v[0] for v in triangles]
+    j = [v[1] for v in triangles]
+    k = [v[2] for v in triangles]
+
+    x = [v[0] for v in vertices]
+    y = [v[1] for v in vertices]
+    z = [v[2] for v in vertices]
+
+
+    data = []
+    faces = [go.Mesh3d(x=x,
+                        y=y,
+                        z=z,
+                        i=i,
+                        j=j,
+                        k=k,
+                        opacity=0.7,
+                        # contour={'show':True},
+                        # vertexcolor=vcolor,
+                        colorbar_title='Amplitude',
+                        colorbar_thickness=10,
+                        colorscale= 'agsunset', # 'viridis'
+                        # intensity=intensity_,
+                        intensitymode='cell',
+                        showscale=True,
+                        hoverinfo='skip',
+                        color='gray'
+                        
+            )]
+    
+    data.extend(lines)
+    data.extend(faces)
+    
+    fig1  = go.Figure(data=data)
             
 ###            
             
