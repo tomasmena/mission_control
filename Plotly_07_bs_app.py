@@ -22,7 +22,7 @@ import pandas as pd
 
 # Panels ######
 
-with open("Plotlling\\panels.json") as data:
+with open("panels.json") as data:
     read_json=json.load(data)
 
 listx=[]
@@ -46,7 +46,7 @@ for indexl,level in enumerate(read_json):
 
 # Points Inclinations ######
 
-with open("Plotlling\\midpoints.json") as data:
+with open("midpoints.json") as data:
     read_points=json.load(data)
 
 
@@ -76,7 +76,7 @@ trixp= listx[3][30]
 triyp= listy[3][30]
 trizp= listz[3][30]
 
-with open("Plotlling\\inclinations.json") as data:
+with open("inclinations.json") as data:
     inclinations=json.load(data)
 
 here = os.path.dirname(__file__)
